@@ -2,7 +2,7 @@ import { existsSync } from "https://deno.land/std@0.82.0/fs/mod.ts";
 import {
   Select,
   SelectValueOptions,
-} from "https://deno.land/x/cliffy@v0.16.0/prompt/mod.ts";
+} from "https://deno.land/x/cliffy@v0.17.0/prompt/mod.ts";
 
 const packageFile = "package.json";
 
@@ -37,6 +37,7 @@ async function getTarget(): Promise<string> {
   return await Select.prompt({
     message: "Select a script",
     options: options,
+    search: true,
   });
 }
 
