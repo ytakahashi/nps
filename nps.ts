@@ -1,8 +1,9 @@
-import { existsSync } from "https://deno.land/std@0.82.0/fs/mod.ts";
+import { existsSync } from "https://deno.land/std@0.89.0/fs/mod.ts";
+import { Command } from "https://deno.land/x/cliffy@v0.17.2/command/mod.ts";
 import {
   Select,
   SelectValueOptions,
-} from "https://deno.land/x/cliffy@v0.17.0/prompt/mod.ts";
+} from "https://deno.land/x/cliffy@v0.17.2/prompt/mod.ts";
 
 const packageFile = "package.json";
 
@@ -62,4 +63,9 @@ async function main() {
   await p.status();
 }
 
-await main();
+await new Command()
+  .name("nps")
+  .version("0.1.0")
+  .description("Interactive npm-scripts runner for node.js projects.")
+  .action(main)
+  .parse(Deno.args);
