@@ -1,27 +1,15 @@
 import { existsSync } from "https://deno.land/std@0.89.0/fs/mod.ts";
-import { Command } from "https://deno.land/x/cliffy@v0.17.2/command/mod.ts";
+import { Command } from "https://deno.land/x/cliffy@v0.18.0/command/mod.ts";
 import {
   Select,
   SelectValueOptions,
-} from "https://deno.land/x/cliffy@v0.17.2/prompt/mod.ts";
+} from "https://deno.land/x/cliffy@v0.18.0/prompt/mod.ts";
 
 const packageFile = "package.json";
-
-type PackageManager = "npm" | "yarn";
 
 type Scripts = {
   [key: string]: string;
 };
-
-function determinePackageManager(): PackageManager | undefined {
-  if (existsSync("package-lock.json")) {
-    return "npm";
-  }
-  if (existsSync("yarn.lock")) {
-    return "yarn";
-  }
-  return undefined;
-}
 
 async function getTarget(): Promise<string> {
   const packageJson = Deno.readTextFileSync(packageFile);
@@ -44,16 +32,11 @@ async function getTarget(): Promise<string> {
 
 async function main() {
   if (!existsSync(packageFile)) {
-    console.log("package.json not found");
+    console.log("nps: package.json not found");
     Deno.exit(1);
   }
 
-  const packageManager = determinePackageManager();
-  if (packageManager === undefined) {
-    console.log("lock file not found");
-    Deno.exit(1);
-  }
-
+  const packageManager = existsSync("yarn.lock") ? "yarn" : "npm";
   const target = await getTarget();
   console.log(`${packageManager} run ${target}`);
   const p = Deno.run({
@@ -66,6 +49,6 @@ async function main() {
 await new Command()
   .name("nps")
   .version("0.1.0")
-  .description("Interactive npm-scripts runner for node.js projects.")
+  .description("Interactive npm-scripts runner for Node.js projects.")
   .action(main)
   .parse(Deno.args);
