@@ -48,7 +48,7 @@ async function main() {
 
 await new Command()
   .name("nps")
-  .version("0.1.0")
+  .version("0.2.0")
   .description("Interactive npm-scripts runner for Node.js projects.")
   .action(main)
   .parse(Deno.args);
