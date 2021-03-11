@@ -1,0 +1,14 @@
+{
+  "name": "test",
+  "description": "test package.json",
+  "version": "1.0.0",
+  "author": "ytakahashi",
+  "license": "MIT",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "mocha",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx  ./src",
+    "build": "tsc"
+  }
+}
