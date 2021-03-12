@@ -52,3 +52,24 @@ export async function selectScript(
   }));
   return await prompt.run(options);
 }
+
+export class CommandRunner {
+  async run(cmd: string[]) {
+    console.log(cmd.join(" "));
+    const p = Deno.run({ cmd: cmd });
+    await p.status();
+  }
+}
+
+export async function runScript(
+  packageManager: string,
+  stage: string,
+  args: string[],
+  commandRunner: CommandRunner,
+) {
+  const cmd = [packageManager, "run", stage];
+  if (args.length > 0) {
+    cmd.push(...args);
+  }
+  await commandRunner.run(cmd);
+}

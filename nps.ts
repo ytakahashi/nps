@@ -1,37 +1,33 @@
-import { existsSync } from "https://deno.land/std@0.89.0/fs/mod.ts";
-import { Command } from "https://deno.land/x/cliffy@v0.18.0/command/mod.ts";
-import {
-  filterScripts,
-  readPackageScript,
-  SelectPrompt,
-  selectScript,
-} from "./src/core.ts";
+import { Command, parseArguments } from "./src/command.ts";
 
-const packageFile = "package.json";
+const version = "0.2.0";
 
-async function main(_: unknown, script?: string) {
-  if (!existsSync(packageFile)) {
-    console.log("nps: package.json not found");
-    Deno.exit(1);
-  }
+const helpMessage = `nps ${version}
+Interactive npm-scripts runner for Node.js projects.
 
-  const packageManager = existsSync("yarn.lock") ? "yarn" : "npm";
-  const scripts = readPackageScript(packageFile);
-  const filtered = filterScripts(scripts, script);
-  const target = await selectScript(filtered, new SelectPrompt());
+To run:
+  nps
 
-  console.log(`${packageManager} run ${target}`);
-  const p = Deno.run({
-    cmd: [packageManager, "run", target],
-  });
+To filter scripts:
+  nps <script_name>
 
-  await p.status();
-}
+To pass arguments to selected command:
+  nps -- <arguments>
 
-await new Command()
-  .name("nps")
-  .version("0.2.0")
-  .description("Interactive npm-scripts runner for Node.js projects.")
-  .arguments("[script]")
-  .action(main)
-  .parse(Deno.args);
+OPTIONS:
+  -h, --help       Prints help information
+  -V, --version    Prints version information
+
+ARGUMENTS:
+  Arbitrary arguments can be passed to this command and/or command defined in package.json.
+  If an argument is provided, npm-scrips are filtered by the word.
+  If arguments are provided after double dash ("--"), those arguments are passed to npm script command.
+
+EXAMPLES:
+  # filters npm-scrips which contains the word "test"
+  # and pass "-f test/myTest.spec.ts" to npm script command.
+  $ nps test -- -f test/myTest.spec.ts
+`;
+
+const args = parseArguments(Deno.args);
+await new Command(version, helpMessage).run(args);

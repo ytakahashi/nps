@@ -1,8 +1,10 @@
 import { dirname, fromFileUrl } from "https://deno.land/std@0.89.0/path/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.89.0/testing/asserts.ts";
 import {
+  CommandRunner,
   filterScripts,
   readPackageScript,
+  runScript,
   SelectPrompt,
   selectScript,
 } from "../src/core.ts";
@@ -79,7 +81,7 @@ class MockedSelectPrompt extends SelectPrompt {
     this.called++;
     this.calledWith = options;
     return Promise.resolve("");
-  }
+  };
 }
 
 Deno.test("select a script (not invoke prompt)", async () => {
@@ -120,4 +122,31 @@ Deno.test("select a script (invoke prompt)", async () => {
     name: "bar (echo bar)",
     value: "bar",
   });
+});
+
+class MockedCommandRunner extends CommandRunner {
+  calledWith: string[] = [];
+  run = async (cmd: string[]) => {
+    await Promise.resolve(this.calledWith = cmd);
+  };
+}
+
+Deno.test("run script without arguments", () => {
+  const packageManager = "npm";
+  const stage = "build";
+  const args: string[] = [];
+  const commandRunner = new MockedCommandRunner();
+
+  runScript(packageManager, stage, args, commandRunner);
+  assertEquals(commandRunner.calledWith, ["npm", "run", "build"]);
+});
+
+Deno.test("run script with arguments", () => {
+  const packageManager = "yarn";
+  const stage = "test";
+  const args: string[] = ["test.ts"];
+  const commandRunner = new MockedCommandRunner();
+
+  runScript(packageManager, stage, args, commandRunner);
+  assertEquals(commandRunner.calledWith, ["yarn", "run", "test", "test.ts"]);
 });
