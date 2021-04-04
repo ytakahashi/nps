@@ -25,7 +25,7 @@ nps
 ### Filter npm-scripts
 
 If an argument is provided, scripts are filtered by the value and prompt shows filtered items.  
-If given value matches only one script, the command is run immediately.  
+If given value matches only one script, the command is run immediately.
 
 ### Pass arguments to command
 

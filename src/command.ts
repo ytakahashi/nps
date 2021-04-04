@@ -11,6 +11,11 @@ import {
 
 const packageFile = "package.json";
 
+function exit(message: string) {
+  console.log(message);
+  Deno.exit(1);
+}
+
 type Arguments = {
   npsArgument?: string;
   commandArguments: string[];
@@ -40,13 +45,18 @@ export class Command {
 
   main = async (args: Arguments): Promise<void> => {
     if (!existsSync(packageFile)) {
-      console.log("nps: package.json not found");
-      Deno.exit(1);
+      exit("nps: package.json not found");
     }
 
     const packageManager = existsSync("yarn.lock") ? "yarn" : "npm";
     const scripts = readPackageScript(packageFile);
+    if (scripts.length === 0) {
+      exit("nps: scripts not defined");
+    }
     const filtered = filterScripts(scripts, args.npsArgument);
+    if (filtered.length === 0) {
+      exit(`nps: no script matches "${args.npsArgument}"`);
+    }
     const target = await selectScript(filtered, new SelectPrompt());
 
     await runScript(
