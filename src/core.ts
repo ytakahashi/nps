@@ -1,4 +1,4 @@
-import { Select } from "https://deno.land/x/cliffy@v0.18.0/prompt/mod.ts";
+import { Select } from "./deps.ts";
 
 type Scripts = {
   [key: string]: string;

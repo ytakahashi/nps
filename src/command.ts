@@ -1,5 +1,4 @@
-import { parseFlags } from "https://deno.land/x/cliffy@v0.18.0/flags/mod.ts";
-import { existsSync } from "https://deno.land/std@0.89.0/fs/mod.ts";
+import { existsSync, parseFlags } from "./deps.ts";
 import {
   CommandRunner,
   filterScripts,

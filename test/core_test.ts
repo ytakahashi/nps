@@ -1,5 +1,4 @@
-import { dirname, fromFileUrl } from "https://deno.land/std@0.89.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.89.0/testing/asserts.ts";
+import { assertEquals, dirname, fromFileUrl } from "./deps.ts";
 import {
   CommandRunner,
   filterScripts,
