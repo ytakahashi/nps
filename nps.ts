@@ -1,6 +1,6 @@
 import { Command, parseArguments } from "./src/command.ts";
 
-const version = "0.4.0";
+const version = "0.5.0";
 
 const helpMessage = `nps ${version}
 Interactive npm-scripts runner for Node.js projects.
