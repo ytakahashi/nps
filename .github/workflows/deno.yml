@@ -28,6 +28,7 @@ jobs:
         run: deno lint
 
       - name: Check code format
+        if: matrix.os != 'windows-latest'
         run: deno fmt --check
 
       - name: Run Tests
