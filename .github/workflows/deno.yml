@@ -24,7 +24,11 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }} # tests across multiple Deno versions
 
-      - name: Run Tests
+      - name: Lint
         run: deno lint
+
+      - name: Check code format
         run: deno fmt --check
+
+      - name: Run Tests
         run: deno test --allow-read --unstable
