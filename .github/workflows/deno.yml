@@ -24,5 +24,12 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }} # tests across multiple Deno versions
 
+      - name: Lint
+        run: deno lint
+
+      - name: Check code format
+        if: matrix.os != 'windows-latest'
+        run: deno fmt --check
+
       - name: Run Tests
         run: deno test --allow-read --unstable
