@@ -9,30 +9,32 @@ import {
   selectScript,
 } from "../src/core.ts";
 
-Deno.test("readPackageScript", async () => {
-  const dir = dirname(fromFileUrl(import.meta.url));
-  const actual = await readPackageScript(`${dir}/npm/package.json`);
-  assertEquals(actual.length, 3);
-  assertEquals(actual[0], {
-    stage: "test",
-    command: "mocha",
+Deno.test("readPackageScript", async (t) => {
+  await t.step("success", async () => {
+    const dir = dirname(fromFileUrl(import.meta.url));
+    const actual = await readPackageScript(`${dir}/npm/package.json`);
+    assertEquals(actual.length, 3);
+    assertEquals(actual[0], {
+      stage: "test",
+      command: "mocha",
+    });
+    assertEquals(actual[1], {
+      stage: "lint",
+      command: "eslint --ext .js,.jsx,.ts,.tsx  ./src",
+    });
+    assertEquals(actual[2], {
+      stage: "build",
+      command: "tsc",
+    });
   });
-  assertEquals(actual[1], {
-    stage: "lint",
-    command: "eslint --ext .js,.jsx,.ts,.tsx  ./src",
-  });
-  assertEquals(actual[2], {
-    stage: "build",
-    command: "tsc",
-  });
-});
 
-Deno.test("readPackageScript (not found)", async () => {
-  await assertRejects(
-    () => readPackageScript("not_exist.json"),
-    Error,
-    "failed to read 'not_exist.json'",
-  );
+  await t.step("fail", async () => {
+    await assertRejects(
+      () => readPackageScript("not_exist.json"),
+      Error,
+      "failed to read 'not_exist.json'",
+    );
+  });
 });
 
 Deno.test("resolvePackageManager", async (t) => {
