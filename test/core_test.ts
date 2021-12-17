@@ -1,16 +1,17 @@
-import { assertEquals, dirname, fromFileUrl } from "./deps.ts";
+import { assertEquals, assertRejects, dirname, fromFileUrl } from "./deps.ts";
 import {
   CommandRunner,
   filterScripts,
   readPackageScript,
+  resolvePackageManager,
   runScript,
   SelectPrompt,
   selectScript,
 } from "../src/core.ts";
 
-Deno.test("read package.json", () => {
+Deno.test("readPackageScript", async () => {
   const dir = dirname(fromFileUrl(import.meta.url));
-  const actual = readPackageScript(`${dir}/package.json`);
+  const actual = await readPackageScript(`${dir}/npm/package.json`);
   assertEquals(actual.length, 3);
   assertEquals(actual[0], {
     stage: "test",
@@ -23,6 +24,36 @@ Deno.test("read package.json", () => {
   assertEquals(actual[2], {
     stage: "build",
     command: "tsc",
+  });
+});
+
+Deno.test("readPackageScript (not found)", async () => {
+  await assertRejects(
+    () => readPackageScript("not_exist.json"),
+    Error,
+    "failed to read 'not_exist.json'",
+  );
+});
+
+Deno.test("resolvePackageManager", async (t) => {
+  const dir = dirname(fromFileUrl(import.meta.url));
+
+  await t.step("npm", async () => {
+    const actual = await resolvePackageManager(`${dir}/npm`);
+    assertEquals(actual, "npm");
+  });
+
+  await t.step("yarn", async () => {
+    const actual = await resolvePackageManager(`${dir}/yarn`);
+    assertEquals(actual, "yarn");
+  });
+
+  await t.step("fail", async () => {
+    await assertRejects(
+      () => resolvePackageManager(dir),
+      Error,
+      "'package-lock.json' or 'yarn.lock' not found",
+    );
   });
 });
 

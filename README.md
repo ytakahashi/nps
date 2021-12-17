@@ -2,6 +2,7 @@
 
 # nps
 
+[![deno version](https://img.shields.io/badge/deno-^1.17.0-blue?logo=deno)](https://deno.land)
 [![deno land](https://img.shields.io/badge/deno.land/x/nps-lightgrey.svg?logo=deno&labelColor=black)](https://deno.land/x/nps)
 [![tag](https://img.shields.io/github/tag/ytakahashi/nps.svg)](https://github.com/ytakahashi/nps)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,6 +11,10 @@
 Interactive npm-scripts runner for Node.js projects.
 
 ![image](./image/nps.gif)
+
+## Requirements
+
+Deno >= 1.17.0
 
 ## Install
 

@@ -9,14 +9,41 @@ type Script = {
   command: string;
 };
 
-export function readPackageScript(packageFile: string): Script[] {
-  const packageJson = Deno.readTextFileSync(packageFile);
-  const scripts: Scripts = JSON.parse(packageJson).scripts;
-  return Object.entries(scripts)
-    .map((entry) => ({
-      stage: entry[0],
-      command: entry[1],
-    }));
+export async function readPackageScript(
+  packageFile = `${Deno.cwd()}/package.json`,
+): Promise<Script[]> {
+  return await import(packageFile, { assert: { type: "json" } })
+    .catch((_) => {
+      throw new Error(`failed to read '${packageFile}'`);
+    })
+    .then((jsonData) => jsonData.default.scripts as Scripts)
+    .then((scripts) =>
+      Object.entries(scripts)
+        .map((entry) => ({
+          stage: entry[0],
+          command: entry[1],
+        }))
+    );
+}
+
+export async function resolvePackageManager(
+  cwd = Deno.cwd(),
+): Promise<string> {
+  const exists = (path: string) =>
+    Deno.lstat(path).then((f) => f.isFile).catch((_) => false);
+  const packageLock = `${cwd}/package-lock.json`;
+  const yarnLock = `${cwd}/yarn.lock`;
+  const [npm, yarn] = await Promise.all([
+    exists(packageLock),
+    exists(yarnLock),
+  ]);
+  if (npm) {
+    return "npm";
+  } else if (yarn) {
+    return "yarn";
+  } else {
+    throw new Error("'package-lock.json' or 'yarn.lock' not found");
+  }
 }
 
 export function filterScripts(scripts: Script[], value?: string): Script[] {

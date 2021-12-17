@@ -1,17 +1,16 @@
-import { existsSync, parseFlags } from "./deps.ts";
+import { parseFlags } from "./deps.ts";
 import {
   CommandRunner,
   filterScripts,
   readPackageScript,
+  resolvePackageManager,
   runScript,
   SelectPrompt,
   selectScript,
 } from "./core.ts";
 
-const packageFile = "package.json";
-
-function exit(message: string) {
-  console.log(message);
+function exit(message: string): never {
+  console.log(`nps: ${message}`);
   Deno.exit(1);
 }
 
@@ -43,18 +42,16 @@ export class Command {
   }
 
   main = async (args: Arguments): Promise<void> => {
-    if (!existsSync(packageFile)) {
-      exit("nps: package.json not found");
-    }
-
-    const packageManager = existsSync("yarn.lock") ? "yarn" : "npm";
-    const scripts = readPackageScript(packageFile);
+    const scripts = await readPackageScript().catch((e) => exit(e.message));
     if (scripts.length === 0) {
-      exit("nps: scripts not defined");
+      exit("scripts not defined");
     }
+    const packageManager = await resolvePackageManager().catch((e) =>
+      exit(e.message)
+    );
     const filtered = filterScripts(scripts, args.npsArgument);
     if (filtered.length === 0) {
-      exit(`nps: no script matches "${args.npsArgument}"`);
+      exit(`no script matches "${args.npsArgument}"`);
     }
     const target = await selectScript(filtered, new SelectPrompt());
 
