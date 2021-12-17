@@ -47,12 +47,12 @@ Deno.test("resolvePackageManager", async (t) => {
   const dir = dirname(fromFileUrl(import.meta.url));
 
   await t.step("npm", async () => {
-    const actual = await resolvePackageManager(`${dir}${SEP}npm`);
+    const actual = await resolvePackageManager(`${dir}${SEP}npm${SEP}`);
     assertEquals(actual, "npm");
   });
 
   await t.step("yarn", async () => {
-    const actual = await resolvePackageManager(`${dir}${SEP}yarn`);
+    const actual = await resolvePackageManager(`${dir}${SEP}yarn${SEP}`);
     assertEquals(actual, "yarn");
   });
 

@@ -1,4 +1,4 @@
-import { Select, SEP } from "./deps.ts";
+import { Select } from "./deps.ts";
 
 type Scripts = {
   [key: string]: string;
@@ -10,13 +10,13 @@ type Script = {
 };
 
 export async function readPackageScript(
-  packageFile = `${Deno.cwd()}${SEP}package.json`,
+  packageFile = `package.json`,
 ): Promise<Script[]> {
-  return await import(packageFile, { assert: { type: "json" } })
+  return await Deno.readTextFile(packageFile)
     .catch((_) => {
       throw new Error(`failed to read '${packageFile}'`);
     })
-    .then((jsonData) => jsonData.default.scripts as Scripts)
+    .then((data) => JSON.parse(data).scripts as Scripts)
     .then((scripts) =>
       Object.entries(scripts)
         .map((entry) => ({
@@ -27,15 +27,13 @@ export async function readPackageScript(
 }
 
 export async function resolvePackageManager(
-  cwd = Deno.cwd(),
+  dir = "",
 ): Promise<string> {
   const exists = (path: string) =>
     Deno.lstat(path).then((f) => f.isFile).catch((_) => false);
-  const packageLock = `${cwd}${SEP}package-lock.json`;
-  const yarnLock = `${cwd}${SEP}yarn.lock`;
   const [npm, yarn] = await Promise.all([
-    exists(packageLock),
-    exists(yarnLock),
+    exists(`${dir}package-lock.json`),
+    exists(`${dir}yarn.lock`),
   ]);
   if (npm) {
     return "npm";
