@@ -1,4 +1,10 @@
-import { assertEquals, assertRejects, dirname, fromFileUrl } from "./deps.ts";
+import {
+  assertEquals,
+  assertRejects,
+  dirname,
+  fromFileUrl,
+  SEP,
+} from "./deps.ts";
 import {
   CommandRunner,
   filterScripts,
@@ -12,7 +18,7 @@ import {
 Deno.test("readPackageScript", async (t) => {
   await t.step("success", async () => {
     const dir = dirname(fromFileUrl(import.meta.url));
-    const actual = await readPackageScript(`${dir}/npm/package.json`);
+    const actual = await readPackageScript(`${dir}${SEP}npm${SEP}package.json`);
     assertEquals(actual.length, 3);
     assertEquals(actual[0], {
       stage: "test",
@@ -41,12 +47,12 @@ Deno.test("resolvePackageManager", async (t) => {
   const dir = dirname(fromFileUrl(import.meta.url));
 
   await t.step("npm", async () => {
-    const actual = await resolvePackageManager(`${dir}/npm`);
+    const actual = await resolvePackageManager(`${dir}${SEP}npm`);
     assertEquals(actual, "npm");
   });
 
   await t.step("yarn", async () => {
-    const actual = await resolvePackageManager(`${dir}/yarn`);
+    const actual = await resolvePackageManager(`${dir}${SEP}yarn`);
     assertEquals(actual, "yarn");
   });
 

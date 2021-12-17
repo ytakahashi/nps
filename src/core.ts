@@ -1,4 +1,4 @@
-import { Select } from "./deps.ts";
+import { Select, SEP } from "./deps.ts";
 
 type Scripts = {
   [key: string]: string;
@@ -10,7 +10,7 @@ type Script = {
 };
 
 export async function readPackageScript(
-  packageFile = `${Deno.cwd()}/package.json`,
+  packageFile = `${Deno.cwd()}${SEP}package.json`,
 ): Promise<Script[]> {
   return await import(packageFile, { assert: { type: "json" } })
     .catch((_) => {
@@ -31,8 +31,8 @@ export async function resolvePackageManager(
 ): Promise<string> {
   const exists = (path: string) =>
     Deno.lstat(path).then((f) => f.isFile).catch((_) => false);
-  const packageLock = `${cwd}/package-lock.json`;
-  const yarnLock = `${cwd}/yarn.lock`;
+  const packageLock = `${cwd}${SEP}package-lock.json`;
+  const yarnLock = `${cwd}${SEP}yarn.lock`;
   const [npm, yarn] = await Promise.all([
     exists(packageLock),
     exists(yarnLock),
