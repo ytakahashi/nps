@@ -9,14 +9,39 @@ type Script = {
   command: string;
 };
 
-export function readPackageScript(packageFile: string): Script[] {
-  const packageJson = Deno.readTextFileSync(packageFile);
-  const scripts: Scripts = JSON.parse(packageJson).scripts;
-  return Object.entries(scripts)
-    .map((entry) => ({
-      stage: entry[0],
-      command: entry[1],
-    }));
+export async function readPackageScript(
+  packageFile = `package.json`,
+): Promise<Script[]> {
+  return await Deno.readTextFile(packageFile)
+    .catch((_) => {
+      throw new Error(`failed to read '${packageFile}'`);
+    })
+    .then((data) => JSON.parse(data).scripts as Scripts)
+    .then((scripts) =>
+      Object.entries(scripts)
+        .map((entry) => ({
+          stage: entry[0],
+          command: entry[1],
+        }))
+    );
+}
+
+export async function resolvePackageManager(
+  dir = "",
+): Promise<string> {
+  const exists = (path: string) =>
+    Deno.lstat(path).then((f) => f.isFile).catch((_) => false);
+  const [npm, yarn] = await Promise.all([
+    exists(`${dir}package-lock.json`),
+    exists(`${dir}yarn.lock`),
+  ]);
+  if (npm) {
+    return "npm";
+  } else if (yarn) {
+    return "yarn";
+  } else {
+    throw new Error("'package-lock.json' or 'yarn.lock' not found");
+  }
 }
 
 export function filterScripts(scripts: Script[], value?: string): Script[] {
