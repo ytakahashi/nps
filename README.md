@@ -14,7 +14,7 @@ Interactive npm-scripts runner for Node.js projects.
 
 ## Requirements
 
-Deno >= 1.17.0
+[Deno](https://deno.land/) >= 1.17.0
 
 ## Install
 
