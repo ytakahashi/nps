@@ -163,12 +163,9 @@ Deno.test("select a script (invoke prompt)", async () => {
 });
 
 class MockedCommandRunner extends CommandRunner {
-  calledPackageManager = "";
-  calledArgs: string[] = [];
-  run = async (packageManager: string, args: string[]) => {
-    this.calledPackageManager = packageManager;
-    this.calledArgs = args;
-    await Promise.resolve();
+  calledWith: string[] = [];
+  run = async (cmd: string[]) => {
+    await Promise.resolve(this.calledWith = cmd);
   };
 }
 
@@ -179,8 +176,7 @@ Deno.test("run script without arguments", () => {
   const commandRunner = new MockedCommandRunner();
 
   runScript(packageManager, stage, args, commandRunner);
-  assertEquals(commandRunner.calledPackageManager, "npm");
-  assertEquals(commandRunner.calledArgs, ["run", "build"]);
+  assertEquals(commandRunner.calledWith, ["npm", "run", "build"]);
 });
 
 Deno.test("run script with arguments", () => {
@@ -190,6 +186,5 @@ Deno.test("run script with arguments", () => {
   const commandRunner = new MockedCommandRunner();
 
   runScript(packageManager, stage, args, commandRunner);
-  assertEquals(commandRunner.calledPackageManager, "yarn");
-  assertEquals(commandRunner.calledArgs, ["run", "test", "test.ts"]);
+  assertEquals(commandRunner.calledWith, ["yarn", "run", "test", "test.ts"]);
 });

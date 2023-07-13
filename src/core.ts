@@ -79,12 +79,10 @@ export async function selectScript(
 }
 
 export class CommandRunner {
-  async run(packageManager: string, args: string[]) {
-    console.log(packageManager + " " + args.join(" "));
-    const command = new Deno.Command(packageManager, {
-      args: args,
-    });
-    await command.output();
+  async run(cmd: string[]) {
+    console.log(cmd.join(" "));
+    const p = Deno.run({ cmd: cmd });
+    await p.status();
   }
 }
 
@@ -94,5 +92,9 @@ export async function runScript(
   args: string[],
   commandRunner: CommandRunner,
 ) {
-  await commandRunner.run(packageManager, ["run", stage, ...args]);
+  const cmd = [packageManager, "run", stage];
+  if (args.length > 0) {
+    cmd.push(...args);
+  }
+  await commandRunner.run(cmd);
 }
