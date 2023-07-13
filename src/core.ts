@@ -81,6 +81,7 @@ export async function selectScript(
 export class CommandRunner {
   async run(cmd: string[]) {
     console.log(cmd.join(" "));
+    // deno-lint-ignore no-deprecated-deno-api
     const p = Deno.run({ cmd: cmd });
     await p.status();
   }
