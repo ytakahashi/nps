@@ -1,4 +1,4 @@
-import { Select } from "./deps.ts";
+import { $, Select } from "./deps.ts";
 
 type Scripts = {
   [key: string]: string;
@@ -80,10 +80,9 @@ export async function selectScript(
 
 export class CommandRunner {
   async run(cmd: string[]) {
-    console.log(cmd.join(" "));
-    // deno-lint-ignore no-deprecated-deno-api
-    const p = Deno.run({ cmd: cmd });
-    await p.status();
+    const cmdStr = cmd.join(" ");
+    console.log(cmdStr);
+    await $.raw`${cmdStr}`;
   }
 }
 
