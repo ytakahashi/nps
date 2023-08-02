@@ -4,26 +4,58 @@ type Scripts = {
   [key: string]: string;
 };
 
-type Script = {
+export class Script {
   stage: string;
   command: string;
-};
+  constructor(stage: string, command: string) {
+    this.stage = stage;
+    this.command = command;
+  }
+  optionMessage = (): string => `${this.stage} (${this.command})`;
+}
+
+export class NpmScripts {
+  #scripts: Script[];
+  constructor(scripts: Script[]) {
+    this.#scripts = scripts;
+  }
+
+  getScripts = (): Script[] => this.#scripts;
+
+  hasItems = (): boolean => this.#scripts.length !== 0;
+
+  filterItems = (value?: string): NpmScripts => {
+    const filtered = value === undefined
+      ? this.#scripts
+      : this.#scripts.filter((s) => s.stage.includes(value));
+    return new NpmScripts(filtered);
+  };
+
+  shouldPrompt = (): boolean => this.#scripts.length === 1;
+
+  getMatchesTo = (optionMessage: string): Script => {
+    const matched = this.#scripts.find((script) =>
+      script.optionMessage() === optionMessage
+    );
+    if (matched === undefined) {
+      throw new Error(`Unexpected: ${optionMessage}`);
+    }
+    return matched;
+  };
+}
 
 export async function readPackageScript(
   packageFile = `package.json`,
-): Promise<Script[]> {
+): Promise<NpmScripts> {
   return await Deno.readTextFile(packageFile)
     .catch((_) => {
       throw new Error(`failed to read '${packageFile}'`);
     })
     .then((data) => JSON.parse(data).scripts as Scripts)
     .then((scripts) =>
-      Object.entries(scripts)
-        .map((entry) => ({
-          stage: entry[0],
-          command: entry[1],
-        }))
-    );
+      Object.entries(scripts).map((entry) => new Script(entry[0], entry[1]))
+    )
+    .then((scripts) => new NpmScripts(scripts));
 }
 
 export async function resolvePackageManager(
@@ -44,38 +76,26 @@ export async function resolvePackageManager(
   }
 }
 
-export function filterScripts(scripts: Script[], value?: string): Script[] {
-  return value === undefined
-    ? scripts
-    : scripts.filter((s) => s.stage.includes(value));
-}
-
 export class SelectPrompt {
-  run(options: {
-    name: string;
-    value: string;
-  }[]): Promise<string> {
+  select(scripts: NpmScripts): Promise<Script> {
+    const options = scripts.getScripts().map((s) => s.optionMessage());
     return Select.prompt({
       message: "Select a script",
       options: options,
       search: true,
-    });
+    }).then((result) => scripts.getMatchesTo(result));
   }
 }
 
 export async function selectScript(
-  scripts: Script[],
+  scripts: NpmScripts,
   prompt: SelectPrompt,
-): Promise<string> {
-  if (scripts.length === 1) {
-    return scripts[0].stage;
+): Promise<Script> {
+  if (scripts.shouldPrompt()) {
+    return scripts.getScripts()[0];
   }
 
-  const options = scripts.map((s) => ({
-    name: `${s.stage} (${s.command})`,
-    value: s.stage,
-  }));
-  return await prompt.run(options);
+  return await prompt.select(scripts);
 }
 
 export class CommandRunner {
@@ -88,11 +108,11 @@ export class CommandRunner {
 
 export async function runScript(
   packageManager: string,
-  stage: string,
+  script: Script,
   args: string[],
   commandRunner: CommandRunner,
 ) {
-  const cmd = [packageManager, "run", stage];
+  const cmd = [packageManager, "run", script.stage];
   if (args.length > 0) {
     cmd.push(...args);
   }

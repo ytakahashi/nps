@@ -1,7 +1,6 @@
 import { parseFlags } from "./deps.ts";
 import {
   CommandRunner,
-  filterScripts,
   readPackageScript,
   resolvePackageManager,
   runScript,
@@ -43,14 +42,14 @@ export class Command {
 
   main = async (args: Arguments): Promise<void> => {
     const scripts = await readPackageScript().catch((e) => exit(e.message));
-    if (scripts.length === 0) {
+    if (!scripts.hasItems()) {
       exit("scripts not defined");
     }
     const packageManager = await resolvePackageManager().catch((e) =>
       exit(e.message)
     );
-    const filtered = filterScripts(scripts, args.npsArgument);
-    if (filtered.length === 0) {
+    const filtered = scripts.filterItems(args.npsArgument);
+    if (!filtered.hasItems()) {
       exit(`no script matches "${args.npsArgument}"`);
     }
     const target = await selectScript(filtered, new SelectPrompt());

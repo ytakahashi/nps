@@ -7,10 +7,11 @@ import {
 } from "./deps.ts";
 import {
   CommandRunner,
-  filterScripts,
+  NpmScripts,
   readPackageScript,
   resolvePackageManager,
   runScript,
+  Script,
   SelectPrompt,
   selectScript,
 } from "../src/core.ts";
@@ -19,19 +20,16 @@ Deno.test("readPackageScript", async (t) => {
   await t.step("success", async () => {
     const dir = dirname(fromFileUrl(import.meta.url));
     const actual = await readPackageScript(`${dir}${SEP}npm${SEP}package.json`);
-    assertEquals(actual.length, 3);
-    assertEquals(actual[0], {
-      stage: "test",
-      command: "mocha",
-    });
-    assertEquals(actual[1], {
-      stage: "lint",
-      command: "eslint --ext .js,.jsx,.ts,.tsx  ./src",
-    });
-    assertEquals(actual[2], {
-      stage: "build",
-      command: "tsc",
-    });
+    assertEquals(actual.getScripts().length, 3);
+    assertEquals(actual.getScripts()[0].stage, "test");
+    assertEquals(actual.getScripts()[0].command, "mocha");
+    assertEquals(actual.getScripts()[1].stage, "lint");
+    assertEquals(
+      actual.getScripts()[1].command,
+      "eslint --ext .js,.jsx,.ts,.tsx  ./src",
+    );
+    assertEquals(actual.getScripts()[2].stage, "build");
+    assertEquals(actual.getScripts()[2].command, "tsc");
   });
 
   await t.step("fail", async () => {
@@ -66,100 +64,66 @@ Deno.test("resolvePackageManager", async (t) => {
 });
 
 Deno.test("filter scripts (without argument)", () => {
-  const scripts = [
-    {
-      stage: "foo",
-      command: "echo foo",
-    },
-    {
-      stage: "bar",
-      command: "echo bar",
-    },
-    {
-      stage: "baz",
-      command: "echo baz",
-    },
-  ];
-
-  const actual = filterScripts(scripts);
-  assertEquals(actual.length, 3);
+  const scripts = new NpmScripts([
+    new Script("foo", "echo foo"),
+    new Script("bar", "echo bar"),
+    new Script("baz", "echo baz"),
+  ]);
+  const actual = scripts.filterItems();
+  assertEquals(actual.getScripts().length, 3);
 });
 
 Deno.test("filter scripts (with argument)", () => {
-  const scripts = [
-    {
-      stage: "foo",
-      command: "echo foo",
-    },
-    {
-      stage: "bar",
-      command: "echo bar",
-    },
-    {
-      stage: "baz",
-      command: "echo baz",
-    },
-  ];
+  const scripts = new NpmScripts([
+    new Script("foo", "echo foo"),
+    new Script("bar", "echo bar"),
+    new Script("baz", "echo baz"),
+  ]);
 
-  const actual = filterScripts(scripts, "ba");
-  assertEquals(actual.length, 2);
-  assertEquals(actual[0].stage, "bar");
-  assertEquals(actual[1].stage, "baz");
+  const actual = scripts.filterItems("ba");
+  assertEquals(actual.getScripts().length, 2);
+  assertEquals(actual.getScripts()[0].stage, "bar");
+  assertEquals(actual.getScripts()[1].stage, "baz");
 });
-
-type Options = {
-  name: string;
-  value: string;
-}[];
 
 class MockedSelectPrompt extends SelectPrompt {
   called = 0;
-  calledWith: Options = [];
-  run = (options: Options): Promise<string> => {
+  calledWith: NpmScripts | undefined;
+
+  select = (scripts: NpmScripts): Promise<Script> => {
     this.called++;
-    this.calledWith = options;
-    return Promise.resolve("");
+    this.calledWith = scripts;
+    return Promise.resolve(scripts.getScripts()[0]);
   };
 }
 
 Deno.test("select a script (not invoke prompt)", async () => {
-  const scripts = [
-    {
-      stage: "foo",
-      command: "echo foo",
-    },
-  ];
-
+  // Given
+  const foo = new Script("foo", "echo foo");
+  const scripts = new NpmScripts([foo]);
   const promptMock = new MockedSelectPrompt();
+
+  // When
   const actual = await selectScript(scripts, promptMock);
-  assertEquals(actual, "foo");
+
+  // Then
+  assertEquals(actual, foo);
   assertEquals(promptMock.called, 0);
 });
 
 Deno.test("select a script (invoke prompt)", async () => {
-  const scripts = [
-    {
-      stage: "foo",
-      command: "echo foo",
-    },
-    {
-      stage: "bar",
-      command: "echo bar",
-    },
-  ];
-
+  // Given
+  const foo = new Script("foo", "echo foo");
+  const bar = new Script("bar", "echo bar");
+  const scripts = new NpmScripts([foo, bar]);
   const promptMock = new MockedSelectPrompt();
+
+  // When
   await selectScript(scripts, promptMock);
+
+  // Then
   assertEquals(promptMock.called, 1);
-  assertEquals(promptMock.calledWith.length, 2);
-  assertEquals(promptMock.calledWith[0], {
-    name: "foo (echo foo)",
-    value: "foo",
-  });
-  assertEquals(promptMock.calledWith[1], {
-    name: "bar (echo bar)",
-    value: "bar",
-  });
+  assertEquals(promptMock.calledWith, scripts);
 });
 
 class MockedCommandRunner extends CommandRunner {
@@ -171,7 +135,7 @@ class MockedCommandRunner extends CommandRunner {
 
 Deno.test("run script without arguments", () => {
   const packageManager = "npm";
-  const stage = "build";
+  const stage = new Script("build", "build");
   const args: string[] = [];
   const commandRunner = new MockedCommandRunner();
 
@@ -181,7 +145,7 @@ Deno.test("run script without arguments", () => {
 
 Deno.test("run script with arguments", () => {
   const packageManager = "yarn";
-  const stage = "test";
+  const stage = new Script("test", "test");
   const args: string[] = ["test.ts"];
   const commandRunner = new MockedCommandRunner();
 
