@@ -1,8 +1,25 @@
-import { $, Select } from "./deps.ts";
+export type Arguments = {
+  npsArgument?: string;
+  commandArguments: string[];
+  hasHelpOption: boolean;
+  hasVersionOption: boolean;
+};
 
 type Scripts = {
   [key: string]: string;
 };
+
+export interface SelectPrompt {
+  select(scripts: NpmScripts): Promise<Script>;
+}
+
+export interface CommandRunner {
+  run(cmd: string[]): Promise<void>;
+}
+
+export interface ArgParser {
+  parse(args: string[]): Arguments;
+}
 
 export class Script {
   stage: string;
@@ -16,6 +33,7 @@ export class Script {
 
 export class NpmScripts {
   #scripts: Script[];
+
   constructor(scripts: Script[]) {
     this.#scripts = scripts;
   }
@@ -76,17 +94,6 @@ export async function resolvePackageManager(
   }
 }
 
-export class SelectPrompt {
-  select(scripts: NpmScripts): Promise<Script> {
-    const options = scripts.getScripts().map((s) => s.optionMessage());
-    return Select.prompt({
-      message: "Select a script",
-      options: options,
-      search: true,
-    }).then((result) => scripts.getMatchesTo(result));
-  }
-}
-
 export async function selectScript(
   scripts: NpmScripts,
   prompt: SelectPrompt,
@@ -96,14 +103,6 @@ export async function selectScript(
   }
 
   return await prompt.select(scripts);
-}
-
-export class CommandRunner {
-  async run(cmd: string[]) {
-    const cmdStr = cmd.join(" ");
-    console.log(cmdStr);
-    await $.raw`${cmdStr}`;
-  }
 }
 
 export async function runScript(

@@ -1,4 +1,4 @@
-import { Command, parseArguments } from "./src/command.ts";
+import { Command } from "./src/command.ts";
 
 const version = "0.9.0";
 
@@ -29,5 +29,4 @@ EXAMPLES:
   $ nps test -- -f test/myTest.spec.ts
 `;
 
-const args = parseArguments(Deno.args);
-await new Command(version, helpMessage).run(args);
+await new Command(Deno.args, version, helpMessage).run();

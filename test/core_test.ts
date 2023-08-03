@@ -86,7 +86,7 @@ Deno.test("filter scripts (with argument)", () => {
   assertEquals(actual.getScripts()[1].stage, "baz");
 });
 
-class MockedSelectPrompt extends SelectPrompt {
+class MockedSelectPrompt implements SelectPrompt {
   called = 0;
   calledWith: NpmScripts | undefined;
 
@@ -126,7 +126,7 @@ Deno.test("select a script (invoke prompt)", async () => {
   assertEquals(promptMock.calledWith, scripts);
 });
 
-class MockedCommandRunner extends CommandRunner {
+class MockedCommandRunner implements CommandRunner {
   calledWith: string[] = [];
   run = async (cmd: string[]) => {
     await Promise.resolve(this.calledWith = cmd);
