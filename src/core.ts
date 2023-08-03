@@ -81,16 +81,21 @@ export async function resolvePackageManager(
 ): Promise<string> {
   const exists = (path: string) =>
     Deno.lstat(path).then((f) => f.isFile).catch((_) => false);
-  const [npm, yarn] = await Promise.all([
+  const [npm, yarn, pnpm] = await Promise.all([
     exists(`${dir}package-lock.json`),
     exists(`${dir}yarn.lock`),
+    exists(`${dir}pnpm-lock.yaml`),
   ]);
   if (npm) {
     return "npm";
   } else if (yarn) {
     return "yarn";
+  } else if (pnpm) {
+    return "pnpm";
   } else {
-    throw new Error("'package-lock.json' or 'yarn.lock' not found");
+    throw new Error(
+      "'package-lock.json' or 'yarn.lock' or 'pnpm-lock.yaml' not found",
+    );
   }
 }
 

@@ -54,11 +54,16 @@ Deno.test("resolvePackageManager", async (t) => {
     assertEquals(actual, "yarn");
   });
 
+  await t.step("pnpm", async () => {
+    const actual = await resolvePackageManager(`${dir}${SEP}pnpm${SEP}`);
+    assertEquals(actual, "pnpm");
+  });
+
   await t.step("fail", async () => {
     await assertRejects(
       () => resolvePackageManager(dir),
       Error,
-      "'package-lock.json' or 'yarn.lock' not found",
+      "'package-lock.json' or 'yarn.lock' or 'pnpm-lock.yaml' not found",
     );
   });
 });
