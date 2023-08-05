@@ -37,6 +37,10 @@ export class DaxCommandRunner implements CommandRunner {
   async run(cmd: string[]) {
     const cmdStr = cmd.join(" ");
     console.log(cmdStr);
-    await $.raw`${cmdStr}`;
+    try {
+      await $.raw`${cmdStr}`;
+    } catch (_e) {
+      throw Error(`'${cmdStr}' failed.`);
+    }
   }
 }
