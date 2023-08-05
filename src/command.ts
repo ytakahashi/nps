@@ -57,7 +57,9 @@ export class Command {
     } else if (this.#args.hasVersionOption) {
       this.showVersion();
     } else {
-      await this.main();
+      await this.main().catch((e) => {
+        exit(e.message);
+      });
     }
   };
 
