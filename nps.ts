@@ -1,6 +1,6 @@
 import { Command } from "./src/command.ts";
 
-const version = "0.9.0";
+const version = "0.10.0";
 
 const helpMessage = `nps ${version}
 Interactive npm-scripts runner for Node.js projects.
