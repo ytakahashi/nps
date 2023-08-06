@@ -25,6 +25,8 @@ Run following command in Node.js project.
 nps
 ```
 
+If `package-lock.json` or `yarn.lock` or `pnpm-lock.yaml` exists in the directory, the appropriate command (`npm` or `yarn` or `pnpm`) will be executed to run the selected script.
+
 ### Filter npm-scripts
 
 If an argument is provided, scripts are filtered by the value and prompt shows filtered items.  
