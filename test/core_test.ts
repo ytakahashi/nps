@@ -8,7 +8,7 @@ import {
 import {
   CommandRunner,
   NpmScripts,
-  readPackageScript,
+  readPackageJson,
   resolvePackageManager,
   runScript,
   Script,
@@ -16,25 +16,52 @@ import {
   selectScript,
 } from "../src/core.ts";
 
-Deno.test("readPackageScript", async (t) => {
-  await t.step("success", async () => {
+Deno.test("readPackageJson", async (t) => {
+  await t.step("success (packageManager: not defined)", async () => {
     const dir = dirname(fromFileUrl(import.meta.url));
-    const actual = await readPackageScript(`${dir}${SEP}npm${SEP}package.json`);
-    assertEquals(actual.getScripts().length, 3);
-    assertEquals(actual.getScripts()[0].stage, "test");
-    assertEquals(actual.getScripts()[0].command, "mocha");
-    assertEquals(actual.getScripts()[1].stage, "lint");
+    const actual = await readPackageJson(`${dir}${SEP}npm${SEP}package.json`);
+
+    const actualPackageManager = actual.packageManager;
+    assertEquals(actualPackageManager, null);
+
+    const actualNpmScripts = actual.scripts;
+    assertEquals(actualNpmScripts.getScripts().length, 3);
+    assertEquals(actualNpmScripts.getScripts()[0].stage, "test");
+    assertEquals(actualNpmScripts.getScripts()[0].command, "mocha");
+    assertEquals(actualNpmScripts.getScripts()[1].stage, "lint");
     assertEquals(
-      actual.getScripts()[1].command,
+      actualNpmScripts.getScripts()[1].command,
       "eslint --ext .js,.jsx,.ts,.tsx  ./src",
     );
-    assertEquals(actual.getScripts()[2].stage, "build");
-    assertEquals(actual.getScripts()[2].command, "tsc");
+    assertEquals(actualNpmScripts.getScripts()[2].stage, "build");
+    assertEquals(actualNpmScripts.getScripts()[2].command, "tsc");
+  });
+
+  await t.step("success (packageManager: yarn)", async () => {
+    const dir = dirname(fromFileUrl(import.meta.url));
+    const actual = await readPackageJson(
+      `${dir}${SEP}npm${SEP}package_yarn.json`,
+    );
+
+    const actualPackageManager = actual.packageManager;
+    assertEquals(actualPackageManager, "yarn");
+
+    const actualNpmScripts = actual.scripts;
+    assertEquals(actualNpmScripts.getScripts().length, 3);
+    assertEquals(actualNpmScripts.getScripts()[0].stage, "test");
+    assertEquals(actualNpmScripts.getScripts()[0].command, "mocha");
+    assertEquals(actualNpmScripts.getScripts()[1].stage, "lint");
+    assertEquals(
+      actualNpmScripts.getScripts()[1].command,
+      "eslint --ext .js,.jsx,.ts,.tsx  ./src",
+    );
+    assertEquals(actualNpmScripts.getScripts()[2].stage, "build");
+    assertEquals(actualNpmScripts.getScripts()[2].command, "tsc");
   });
 
   await t.step("fail", async () => {
     await assertRejects(
-      () => readPackageScript("not_exist.json"),
+      () => readPackageJson("not_exist.json"),
       Error,
       "failed to read 'not_exist.json'",
     );
