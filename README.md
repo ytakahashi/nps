@@ -17,6 +17,12 @@ Interactive npm-scripts runner for Node.js projects.
 deno install --allow-read --allow-run --allow-write --allow-env --allow-net=deno.land https://deno.land/x/nps/nps.ts
 ```
 
+## Update
+
+```terminal
+deno install -r -f --allow-read --allow-run --allow-write --allow-env --allow-net=deno.land https://deno.land/x/nps/nps.ts
+```
+
 ## Usage
 
 Run following command in Node.js project.

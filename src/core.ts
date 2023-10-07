@@ -62,18 +62,25 @@ export class NpmScripts {
   };
 }
 
-export async function readPackageScript(
+export async function readPackageJson(
   packageFile = `package.json`,
-): Promise<NpmScripts> {
-  return await Deno.readTextFile(packageFile)
+) {
+  const json = await Deno.readTextFile(packageFile)
     .catch((_) => {
       throw new Error(`failed to read '${packageFile}'`);
     })
-    .then((data) => JSON.parse(data).scripts as Scripts)
-    .then((scripts) =>
-      Object.entries(scripts).map((entry) => new Script(entry[0], entry[1]))
-    )
-    .then((scripts) => new NpmScripts(scripts));
+    .then((data) => JSON.parse(data));
+
+  const packageManager = json.packageManager
+    ? json.packageManager.split("@")[0] as string
+    : null;
+  const scripts = Object.entries(json.scripts as Scripts)
+    .map((script) => new Script(script[0], script[1]));
+
+  return {
+    packageManager,
+    scripts: new NpmScripts(scripts),
+  };
 }
 
 export async function resolvePackageManager(
