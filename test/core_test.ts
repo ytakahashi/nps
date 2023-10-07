@@ -21,10 +21,10 @@ Deno.test("readPackageJson", async (t) => {
     const dir = dirname(fromFileUrl(import.meta.url));
     const actual = await readPackageJson(`${dir}${SEP}npm${SEP}package.json`);
 
-    const actualPackageManager = actual.packageManager
-    assertEquals(actualPackageManager, null)
+    const actualPackageManager = actual.packageManager;
+    assertEquals(actualPackageManager, null);
 
-    const actualNpmScripts = actual.scripts
+    const actualNpmScripts = actual.scripts;
     assertEquals(actualNpmScripts.getScripts().length, 3);
     assertEquals(actualNpmScripts.getScripts()[0].stage, "test");
     assertEquals(actualNpmScripts.getScripts()[0].command, "mocha");
@@ -39,12 +39,14 @@ Deno.test("readPackageJson", async (t) => {
 
   await t.step("success (packageManager: yarn)", async () => {
     const dir = dirname(fromFileUrl(import.meta.url));
-    const actual = await readPackageJson(`${dir}${SEP}npm${SEP}package_yarn.json`);
+    const actual = await readPackageJson(
+      `${dir}${SEP}npm${SEP}package_yarn.json`,
+    );
 
-    const actualPackageManager = actual.packageManager
-    assertEquals(actualPackageManager, "yarn")
+    const actualPackageManager = actual.packageManager;
+    assertEquals(actualPackageManager, "yarn");
 
-    const actualNpmScripts = actual.scripts
+    const actualNpmScripts = actual.scripts;
     assertEquals(actualNpmScripts.getScripts().length, 3);
     assertEquals(actualNpmScripts.getScripts()[0].stage, "test");
     assertEquals(actualNpmScripts.getScripts()[0].command, "mocha");
