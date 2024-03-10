@@ -3,7 +3,7 @@ import {
   assertRejects,
   dirname,
   fromFileUrl,
-  SEP,
+  SEPARATOR,
 } from "./deps.ts";
 import {
   CommandRunner,
@@ -19,7 +19,9 @@ import {
 Deno.test("readPackageJson", async (t) => {
   await t.step("success (packageManager: not defined)", async () => {
     const dir = dirname(fromFileUrl(import.meta.url));
-    const actual = await readPackageJson(`${dir}${SEP}npm${SEP}package.json`);
+    const actual = await readPackageJson(
+      `${dir}${SEPARATOR}npm${SEPARATOR}package.json`,
+    );
 
     const actualPackageManager = actual.packageManager;
     assertEquals(actualPackageManager, null);
@@ -40,7 +42,7 @@ Deno.test("readPackageJson", async (t) => {
   await t.step("success (packageManager: yarn)", async () => {
     const dir = dirname(fromFileUrl(import.meta.url));
     const actual = await readPackageJson(
-      `${dir}${SEP}npm${SEP}package_yarn.json`,
+      `${dir}${SEPARATOR}npm${SEPARATOR}package_yarn.json`,
     );
 
     const actualPackageManager = actual.packageManager;
@@ -72,17 +74,23 @@ Deno.test("resolvePackageManager", async (t) => {
   const dir = dirname(fromFileUrl(import.meta.url));
 
   await t.step("npm", async () => {
-    const actual = await resolvePackageManager(`${dir}${SEP}npm${SEP}`);
+    const actual = await resolvePackageManager(
+      `${dir}${SEPARATOR}npm${SEPARATOR}`,
+    );
     assertEquals(actual, "npm");
   });
 
   await t.step("yarn", async () => {
-    const actual = await resolvePackageManager(`${dir}${SEP}yarn${SEP}`);
+    const actual = await resolvePackageManager(
+      `${dir}${SEPARATOR}yarn${SEPARATOR}`,
+    );
     assertEquals(actual, "yarn");
   });
 
   await t.step("pnpm", async () => {
-    const actual = await resolvePackageManager(`${dir}${SEP}pnpm${SEP}`);
+    const actual = await resolvePackageManager(
+      `${dir}${SEPARATOR}pnpm${SEPARATOR}`,
+    );
     assertEquals(actual, "pnpm");
   });
 
