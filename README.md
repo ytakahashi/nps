@@ -14,13 +14,13 @@ Interactive npm-scripts runner for Node.js projects.
 ## Install
 
 ```terminal
-deno install --allow-read --allow-run --allow-write --allow-env --allow-net=deno.land https://deno.land/x/nps/nps.ts
+deno install --global --allow-read --allow-run --allow-env https://deno.land/x/nps/nps.ts
 ```
 
 ## Update
 
 ```terminal
-deno install -r -f --allow-read --allow-run --allow-write --allow-env --allow-net=deno.land https://deno.land/x/nps/nps.ts
+deno install --global --force --reload --allow-read --allow-run --allow-env https://deno.land/x/nps/nps.ts
 ```
 
 ## Usage
@@ -31,7 +31,8 @@ Run following command in Node.js project.
 nps
 ```
 
-If `package-lock.json` or `yarn.lock` or `pnpm-lock.yaml` exists in the directory, the appropriate command (`npm` or `yarn` or `pnpm`) will be executed to run the selected script.
+If `package-lock.json` or `yarn.lock` or `pnpm-lock.yaml` exists in the directory, the appropriate command (`npm` or `yarn` or `pnpm`) will be executed to run the selected script.  
+See `nps -h` for details.
 
 ### Filter npm-scripts
 
