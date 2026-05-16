@@ -28,6 +28,10 @@ export class CliffySelectPrompt implements SelectPrompt {
       message: "Select a script",
       options: options,
       search: true,
+      keys: {
+        nextPage: ["pagedown", "right"],
+        previousPage: ["pageup", "left"],
+      },
     });
     return scripts.getMatchesTo(selected);
   }
