@@ -94,11 +94,25 @@ Deno.test("resolvePackageManager", async (t) => {
     assertEquals(actual, "pnpm");
   });
 
+  await t.step("bun", async () => {
+    const actual = await resolvePackageManager(
+      `${dir}${SEPARATOR}bun${SEPARATOR}`,
+    );
+    assertEquals(actual, "bun");
+  });
+
+  await t.step("bun lockb", async () => {
+    const actual = await resolvePackageManager(
+      `${dir}${SEPARATOR}bun_lockb${SEPARATOR}`,
+    );
+    assertEquals(actual, "bun");
+  });
+
   await t.step("fail", async () => {
     await assertRejects(
       () => resolvePackageManager(dir),
       Error,
-      "'package-lock.json' or 'yarn.lock' or 'pnpm-lock.yaml' not found",
+      "'bun.lock', 'bun.lockb', 'package-lock.json', 'yarn.lock', or 'pnpm-lock.yaml' not found",
     );
   });
 });
@@ -191,4 +205,14 @@ Deno.test("run script with arguments", () => {
 
   runScript(packageManager, stage, args, commandRunner);
   assertEquals(commandRunner.calledWith, ["yarn", "run", "test", "test.ts"]);
+});
+
+Deno.test("run script with bun", () => {
+  const packageManager = "bun";
+  const stage = new Script("test", "test");
+  const args: string[] = ["test.ts"];
+  const commandRunner = new MockedCommandRunner();
+
+  runScript(packageManager, stage, args, commandRunner);
+  assertEquals(commandRunner.calledWith, ["bun", "run", "test", "test.ts"]);
 });
