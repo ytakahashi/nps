@@ -31,7 +31,7 @@ Run following command in Node.js project.
 nps
 ```
 
-If `package-lock.json` or `yarn.lock` or `pnpm-lock.yaml` exists in the directory, the appropriate command (`npm` or `yarn` or `pnpm`) will be executed to run the selected script.  
+If `bun.lock`, `bun.lockb`, `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml` exists in the directory, the appropriate command (`bun`, `npm`, `yarn`, or `pnpm`) will be executed to run the selected script.  
 See `nps -h` for details.
 
 ### Filter npm-scripts
