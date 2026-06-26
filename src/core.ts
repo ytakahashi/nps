@@ -3,6 +3,9 @@ export type Arguments = {
   commandArguments: string[];
   hasHelpOption: boolean;
   hasVersionOption: boolean;
+  hasListScriptsOption: boolean;
+  hasInitCompletionOption: boolean;
+  initCompletionShell?: string;
 };
 
 type Scripts = {
@@ -74,7 +77,7 @@ export async function readPackageJson(
   const packageManager = json.packageManager
     ? json.packageManager.split("@")[0] as string
     : null;
-  const scripts = Object.entries(json.scripts as Scripts)
+  const scripts = Object.entries((json.scripts ?? {}) as Scripts)
     .map((script) => new Script(script[0], script[1]));
 
   return {

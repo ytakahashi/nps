@@ -14,9 +14,14 @@ To filter scripts:
 To pass arguments to selected command:
   nps -- <arguments>
 
+To enable zsh completion for package.json scripts:
+  eval "$(nps --init-completion zsh)"
+
 OPTIONS:
-  -h, --help       Prints help information
-  -V, --version    Prints version information
+  -h, --help              Prints help information
+  -V, --version           Prints version information
+      --list-scripts      Prints package.json scripts
+      --init-completion   Prints shell completion setup script
 
 ARGUMENTS:
   Arbitrary arguments can be passed to this command and/or command defined in package.json.
