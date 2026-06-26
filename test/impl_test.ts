@@ -9,6 +9,9 @@ Deno.test("CliffyArgParser#parse", () => {
     commandArguments: [],
     hasHelpOption: false,
     hasVersionOption: false,
+    hasListScriptsOption: false,
+    hasInitCompletionOption: false,
+    initCompletionShell: undefined,
   });
 
   assertEquals(sut.parse(["lint"]), {
@@ -16,6 +19,9 @@ Deno.test("CliffyArgParser#parse", () => {
     commandArguments: [],
     hasHelpOption: false,
     hasVersionOption: false,
+    hasListScriptsOption: false,
+    hasInitCompletionOption: false,
+    initCompletionShell: undefined,
   });
 
   assertEquals(sut.parse(["lint", "xyz"]), {
@@ -23,6 +29,9 @@ Deno.test("CliffyArgParser#parse", () => {
     commandArguments: [],
     hasHelpOption: false,
     hasVersionOption: false,
+    hasListScriptsOption: false,
+    hasInitCompletionOption: false,
+    initCompletionShell: undefined,
   });
 
   assertEquals(sut.parse(["--", "--ext", ".ts", "lib/"]), {
@@ -30,6 +39,9 @@ Deno.test("CliffyArgParser#parse", () => {
     commandArguments: ["--ext", ".ts", "lib/"],
     hasHelpOption: false,
     hasVersionOption: false,
+    hasListScriptsOption: false,
+    hasInitCompletionOption: false,
+    initCompletionShell: undefined,
   });
 
   assertEquals(sut.parse(["build", "--", "abc"]), {
@@ -37,6 +49,9 @@ Deno.test("CliffyArgParser#parse", () => {
     commandArguments: ["abc"],
     hasHelpOption: false,
     hasVersionOption: false,
+    hasListScriptsOption: false,
+    hasInitCompletionOption: false,
+    initCompletionShell: undefined,
   });
 
   assertEquals(sut.parse(["test", "--", "-f", "test.spec.ts"]), {
@@ -44,5 +59,28 @@ Deno.test("CliffyArgParser#parse", () => {
     commandArguments: ["-f", "test.spec.ts"],
     hasHelpOption: false,
     hasVersionOption: false,
+    hasListScriptsOption: false,
+    hasInitCompletionOption: false,
+    initCompletionShell: undefined,
+  });
+
+  assertEquals(sut.parse(["--list-scripts"]), {
+    npsArgument: undefined,
+    commandArguments: [],
+    hasHelpOption: false,
+    hasVersionOption: false,
+    hasListScriptsOption: true,
+    hasInitCompletionOption: false,
+    initCompletionShell: undefined,
+  });
+
+  assertEquals(sut.parse(["--init-completion", "zsh"]), {
+    npsArgument: undefined,
+    commandArguments: [],
+    hasHelpOption: false,
+    hasVersionOption: false,
+    hasListScriptsOption: false,
+    hasInitCompletionOption: true,
+    initCompletionShell: "zsh",
   });
 });

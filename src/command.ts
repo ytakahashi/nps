@@ -5,6 +5,8 @@ import {
   runScript,
   selectScript,
 } from "./core.ts";
+import { zshCompletionScript } from "./completion.ts";
+import { formatScriptsAsTsv } from "./format.ts";
 import {
   CliffyArgParser,
   CliffySelectPrompt,
@@ -55,11 +57,32 @@ export class Command {
     );
   };
 
+  listScripts = async (): Promise<void> => {
+    const result = await readPackageJson().catch(() => undefined);
+    if (result === undefined || !result.scripts.hasItems()) {
+      return;
+    }
+
+    console.log(formatScriptsAsTsv(result.scripts));
+  };
+
+  initCompletion = (): void => {
+    if (this.#args.initCompletionShell !== "zsh") {
+      exit("unsupported completion shell");
+    }
+
+    console.log(zshCompletionScript());
+  };
+
   run = async (): Promise<void> => {
     if (this.#args.hasHelpOption) {
       this.showHelp();
     } else if (this.#args.hasVersionOption) {
       this.showVersion();
+    } else if (this.#args.hasListScriptsOption) {
+      await this.listScripts();
+    } else if (this.#args.hasInitCompletionOption) {
+      this.initCompletion();
     } else {
       await this.main().catch((e) => {
         exit(e.message);

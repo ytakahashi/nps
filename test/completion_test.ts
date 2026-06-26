@@ -1,0 +1,12 @@
+import { assertEquals } from "./deps.ts";
+import { zshCompletionScript } from "../src/completion.ts";
+
+Deno.test("zsh completion script", () => {
+  const actual = zshCompletionScript();
+
+  assertEquals(actual.includes("nps --list-scripts"), true);
+  assertEquals(actual.includes("compdef _nps_complete_npm npm"), true);
+  assertEquals(actual.includes("compdef _nps_complete_pnpm pnpm"), true);
+  assertEquals(actual.includes("compdef _nps_complete_yarn yarn"), true);
+  assertEquals(actual.includes("compdef _nps_complete_bun bun"), true);
+});

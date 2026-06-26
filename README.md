@@ -43,3 +43,15 @@ If given value matches only one script, the command is run immediately.
 
 Arguments after double dash (`--`) are treated as script command option like [npm run](https://docs.npmjs.com/cli/v7/commands/npm-run-script).  
 All the arguments after the `--` are passed directly to selected script.
+
+### zsh completion
+
+`nps` can add package.json script completion to `npm run`, `npm run-script`, `pnpm run`, `yarn run`, and `bun run`.
+
+Add the following line to your `.zshrc`.
+
+```terminal
+eval "$(nps --init-completion zsh)"
+```
+
+After setup, script names are completed from the current directory's `package.json`.
