@@ -39,21 +39,22 @@ export function zshCompletionScript(): string {
     '  typeset -g _nps_previous_bun_completion="${_comps[bun]}"',
     "fi",
     "",
-    // Read tab-separated `<name>\t<description>` lines from `nps --list-scripts`
-    // and offer the script names (with their commands shown as descriptions).
+    // Read tab-separated `<name>\t<description>` lines from `nps --list-scripts`.
+    // `compadd -d` uses display strings as the visible list entries, so each
+    // display must include the script name even though only the name is inserted.
     "_nps_complete_package_scripts() {",
     "  emulate -L zsh",
-    "  local -a candidates descriptions",
+    "  local -a candidates displays",
     "  local name description",
     "",
     "  while IFS=$'\\t' read -r name description; do",
     '    [[ -n "$name" ]] || continue',
     '    candidates+=("$name")',
-    '    descriptions+=("$description")',
+    '    displays+=("$name => $description")',
     "  done < <(nps --list-scripts 2>/dev/null)",
     "",
     "  if (( ${#candidates[@]} )); then",
-    '    compadd -d descriptions -- "${candidates[@]}"',
+    '    compadd -d displays -- "${candidates[@]}"',
     "  fi",
     "}",
     "",
