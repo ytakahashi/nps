@@ -2,10 +2,10 @@
  * Generates the zsh script printed by `nps --init-completion zsh`.
  *
  * - Instead of registering a brand-new completion, each package manager's
- *   existing completion is wrapped: we only intercept the script-name
- *   position of `<pm> run <script>` and delegate every other case back to the
- *   original completion. This keeps the package managers' own completions
- *   (options, subcommands, etc.) intact rather than replacing them.
+ *   existing completion is wrapped: we intercept `<pm> run<Tab>` and the
+ *   script-name position of `<pm> run <script>`, then delegate every other case
+ *   back to the original completion. This keeps the package managers' own
+ *   completions (options, subcommands, etc.) intact rather than replacing them.
  * - The original completion is captured into `_nps_previous_<pm>_completion`
  *   before we override it with `compdef`. The guard around each capture makes
  *   the script idempotent: re-sourcing it (e.g. reloading `.zshrc`) must not
@@ -50,12 +50,27 @@ export function zshCompletionScript(): string {
     "  while IFS=$'\\t' read -r name description; do",
     '    [[ -n "$name" ]] || continue',
     '    candidates+=("$name")',
-    '    displays+=("$name => $description")',
+    '    displays+=("$name ($description)")',
     "  done < <(nps --list-scripts 2>/dev/null)",
     "",
     "  if (( ${#candidates[@]} )); then",
     '    compadd -d displays -- "${candidates[@]}"',
     "  fi",
+    "}",
+    "",
+    // When the cursor is still on the `run` word (`<pm> run<Tab>`), make zsh
+    // accept that word and insert a space so the next completion enters the
+    // script-name position above.
+    "_nps_complete_run_command() {",
+    "  emulate -L zsh",
+    '  local command="$1"',
+    "",
+    '  if (( CURRENT == 2 )) && [[ "${words[2]}" == "$command" ]]; then',
+    '    compadd -S " " -- "$command"',
+    "    return 0",
+    "  fi",
+    "",
+    "  return 1",
     "}",
     "",
     // Delegate to the captured original completion. Fall back to `_default`
@@ -82,6 +97,10 @@ export function zshCompletionScript(): string {
     "    return",
     "  fi",
     "",
+    "  if _nps_complete_run_command run || _nps_complete_run_command run-script; then",
+    "    return",
+    "  fi",
+    "",
     '  _nps_call_previous_completion "$_nps_previous_npm_completion"',
     "}",
     "",
@@ -90,6 +109,10 @@ export function zshCompletionScript(): string {
     "",
     '  if [[ "${words[2]}" == "run" ]] && (( CURRENT == 3 )); then',
     "    _nps_complete_package_scripts",
+    "    return",
+    "  fi",
+    "",
+    "  if _nps_complete_run_command run; then",
     "    return",
     "  fi",
     "",
@@ -104,6 +127,10 @@ export function zshCompletionScript(): string {
     "    return",
     "  fi",
     "",
+    "  if _nps_complete_run_command run; then",
+    "    return",
+    "  fi",
+    "",
     '  _nps_call_previous_completion "$_nps_previous_yarn_completion"',
     "}",
     "",
@@ -112,6 +139,10 @@ export function zshCompletionScript(): string {
     "",
     '  if [[ "${words[2]}" == "run" ]] && (( CURRENT == 3 )); then',
     "    _nps_complete_package_scripts",
+    "    return",
+    "  fi",
+    "",
+    "  if _nps_complete_run_command run; then",
     "    return",
     "  fi",
     "",
