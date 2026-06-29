@@ -50,7 +50,7 @@ export function zshCompletionScript(): string {
     "  while IFS=$'\\t' read -r name description; do",
     '    [[ -n "$name" ]] || continue',
     '    candidates+=("$name")',
-    '    displays+=("$name => $description")',
+    '    displays+=("$name ($description)")',
     "  done < <(nps --list-scripts 2>/dev/null)",
     "",
     "  if (( ${#candidates[@]} )); then",

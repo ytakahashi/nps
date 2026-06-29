@@ -5,7 +5,7 @@ Deno.test("zsh completion script", () => {
   const actual = zshCompletionScript();
 
   assertEquals(actual.includes("nps --list-scripts"), true);
-  assertEquals(actual.includes('displays+=("$name => $description")'), true);
+  assertEquals(actual.includes('displays+=("$name ($description)")'), true);
   assertEquals(actual.includes("_nps_complete_run_command()"), true);
   assertEquals(actual.includes('compadd -S " " -- "$command"'), true);
   assertEquals(
