@@ -30,18 +30,16 @@ export class Command {
   }
 
   main = async (): Promise<void> => {
-    let { packageManager, scripts } = await readPackageJson().catch((e) =>
+    const { packageJson, scripts } = await readPackageJson().catch((e) =>
       exit(e.message)
     );
     if (!scripts.hasItems()) {
       exit("scripts not defined");
     }
 
-    if (packageManager == null) {
-      packageManager = await resolvePackageManager().catch((e) =>
-        exit(e.message)
-      );
-    }
+    const packageManager = await resolvePackageManager(packageJson).catch((e) =>
+      exit(e.message)
+    );
 
     const filtered = scripts.filterItems(this.#args.npsArgument);
     if (!filtered.hasItems()) {

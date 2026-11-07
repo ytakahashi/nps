@@ -31,7 +31,12 @@ Run following command in Node.js project.
 nps
 ```
 
-If `bun.lock`, `bun.lockb`, `package-lock.json`, `yarn.lock`, or `pnpm-lock.yaml` exists in the directory, the appropriate command (`bun`, `npm`, `yarn`, or `pnpm`) will be executed to run the selected script.  
+The package manager is selected from the current directory in this order:
+
+1. `package.json`'s `devEngines.packageManager.name`.
+2. `package.json`'s `packageManager` field.
+3. Lockfiles: `bun.lock`, `bun.lockb`, `package-lock.json`, `yarn.lock`, and `pnpm-lock.yaml`.
+
 See `nps -h` for details.
 
 ### Filter npm-scripts
