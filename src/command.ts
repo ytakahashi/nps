@@ -3,11 +3,7 @@ import { readPackageJson } from "./package_json.ts";
 import { resolvePackageManager } from "./package_manager.ts";
 import { zshCompletionScript } from "./completion.ts";
 import { formatScriptsAsTsv } from "./format.ts";
-import {
-  CliffyArgParser,
-  CliffySelectPrompt,
-  DaxCommandRunner,
-} from "./impl.ts";
+import type { CommandRunner, SelectPrompt } from "./npm_scripts.ts";
 
 export type Arguments = {
   npsArgument?: string;
@@ -19,9 +15,10 @@ export type Arguments = {
   initCompletionShell?: string;
 };
 
-export interface ArgParser {
-  parse(args: string[]): Arguments;
-}
+export type CommandDependencies = {
+  selectPrompt: SelectPrompt;
+  commandRunner: CommandRunner;
+};
 
 function exit(message: string): never {
   console.log(`nps: ${message}`);
@@ -33,34 +30,43 @@ export class Command {
   #version: string;
   #helpMessage: string;
 
-  constructor(args: string[], version: string, helpMessage: string) {
-    this.#args = new CliffyArgParser().parse(args);
+  #selectPrompt: SelectPrompt;
+  #commandRunner: CommandRunner;
+
+  constructor(
+    args: Arguments,
+    version: string,
+    helpMessage: string,
+    deps: CommandDependencies,
+  ) {
+    this.#args = args;
+    this.#selectPrompt = deps.selectPrompt;
+    this.#commandRunner = deps.commandRunner;
     this.#helpMessage = helpMessage;
     this.#version = version;
   }
 
   main = async (): Promise<void> => {
-    const packageJson = await readPackageJson().catch((e) => exit(e.message));
+    // Report execution errors once through run().
+    const packageJson = await readPackageJson();
     const scripts = NpmScripts.fromPackageJson(packageJson);
     if (!scripts.hasItems()) {
-      exit("scripts not defined");
+      throw new Error("scripts not defined");
     }
 
-    const packageManager = await resolvePackageManager(packageJson).catch((e) =>
-      exit(e.message)
-    );
+    const packageManager = await resolvePackageManager(packageJson);
 
     const filtered = scripts.filterItems(this.#args.npsArgument);
     if (!filtered.hasItems()) {
-      exit(`no script matches "${this.#args.npsArgument}"`);
+      throw new Error(`no script matches "${this.#args.npsArgument}"`);
     }
 
-    const target = await selectScript(filtered, new CliffySelectPrompt());
+    const target = await selectScript(filtered, this.#selectPrompt);
     await runScript(
       packageManager,
       target,
       this.#args.commandArguments,
-      new DaxCommandRunner(),
+      this.#commandRunner,
     );
   };
 

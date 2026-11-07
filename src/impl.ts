@@ -1,4 +1,4 @@
-import type { ArgParser, Arguments } from "./command.ts";
+import type { Arguments } from "./command.ts";
 import type {
   CommandRunner,
   NpmScripts,
@@ -7,7 +7,7 @@ import type {
 } from "./npm_scripts.ts";
 import { $, parseFlags, Select } from "./deps.ts";
 
-export class CliffyArgParser implements ArgParser {
+export class CliffyArgParser {
   parse(args: string[]): Arguments {
     const parsed = parseFlags(args);
     const k = Object.keys(parsed.flags);
