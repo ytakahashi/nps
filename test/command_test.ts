@@ -1,4 +1,10 @@
-import { assertEquals, dirname, fromFileUrl, SEPARATOR } from "./deps.ts";
+import {
+  assertEquals,
+  assertRejects,
+  dirname,
+  fromFileUrl,
+  SEPARATOR,
+} from "./deps.ts";
 import { Command } from "../src/command.ts";
 
 const version = "9.9.9";
@@ -130,4 +136,51 @@ Deno.test("Command#run --list-scripts ignores invalid package manager declaratio
   );
 
   assertEquals(logs, ["test\techo test"]);
+});
+
+Deno.test("Command#run --list-scripts stays silent for invalid script commands", async () => {
+  let logs: string[] = ["sentinel"];
+  await withCwd(`${fixtureDir}${SEPARATOR}invalid_scripts`, async () => {
+    logs = await captureLog(() =>
+      new Command(["--list-scripts"], version, helpMessage).run()
+    );
+  });
+  assertEquals(logs, []);
+});
+
+Deno.test("Command#run --list-scripts stays silent for a non-object scripts field", async () => {
+  let logs: string[] = ["sentinel"];
+  await withCwd(`${fixtureDir}${SEPARATOR}invalid_scripts_object`, async () => {
+    logs = await captureLog(() =>
+      new Command(["--list-scripts"], version, helpMessage).run()
+    );
+  });
+  assertEquals(logs, []);
+});
+
+Deno.test("Command#run reports invalid scripts before package manager resolution", async () => {
+  const originalExit = Deno.exit;
+  let exitCode: number | undefined;
+  Deno.exit = ((code?: number) => {
+    exitCode = code;
+    throw new Error("exit");
+  }) as typeof Deno.exit;
+
+  let logs: string[] = [];
+  try {
+    // This fixture has no lockfile: script validation must fail first.
+    await withCwd(`${fixtureDir}${SEPARATOR}invalid_scripts`, async () => {
+      logs = await captureLog(() =>
+        assertRejects(
+          () => new Command([], version, helpMessage).run(),
+          Error,
+          "exit",
+        ).then(() => {})
+      );
+    });
+  } finally {
+    Deno.exit = originalExit;
+  }
+  assertEquals(exitCode, 1);
+  assertEquals(logs, [`nps: 'scripts["test"]' must be a string`]);
 });

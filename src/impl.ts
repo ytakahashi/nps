@@ -1,11 +1,10 @@
-import {
-  ArgParser,
-  Arguments,
+import type { ArgParser, Arguments } from "./command.ts";
+import type {
   CommandRunner,
   NpmScripts,
   Script,
   SelectPrompt,
-} from "./core.ts";
+} from "./npm_scripts.ts";
 import { $, parseFlags, Select } from "./deps.ts";
 
 export class CliffyArgParser implements ArgParser {

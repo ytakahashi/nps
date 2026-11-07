@@ -5,144 +5,69 @@ import {
   fromFileUrl,
   SEPARATOR,
 } from "./deps.ts";
-import {
-  CommandRunner,
-  NpmScripts,
-  readPackageJson,
-  resolvePackageManager,
-  runScript,
-  Script,
-  SelectPrompt,
-  selectScript,
-} from "../src/core.ts";
+import { resolvePackageManager } from "../src/package_manager.ts";
 
-Deno.test("readPackageJson", async (t) => {
-  await t.step("success (packageManager: not defined)", async () => {
-    const dir = dirname(fromFileUrl(import.meta.url));
-    const actual = await readPackageJson(
-      `${dir}${SEPARATOR}npm${SEPARATOR}package.json`,
-    );
-
-    const actualPackageManager = actual.packageJson.packageManager;
-    assertEquals(actualPackageManager, undefined);
-
-    const actualNpmScripts = actual.scripts;
-    assertEquals(actualNpmScripts.getScripts().length, 3);
-    assertEquals(actualNpmScripts.getScripts()[0].stage, "test");
-    assertEquals(actualNpmScripts.getScripts()[0].command, "mocha");
-    assertEquals(actualNpmScripts.getScripts()[1].stage, "lint");
-    assertEquals(
-      actualNpmScripts.getScripts()[1].command,
-      "eslint --ext .js,.jsx,.ts,.tsx  ./src",
-    );
-    assertEquals(actualNpmScripts.getScripts()[2].stage, "build");
-    assertEquals(actualNpmScripts.getScripts()[2].command, "tsc");
-  });
-
-  await t.step("success (packageManager: yarn)", async () => {
-    const dir = dirname(fromFileUrl(import.meta.url));
-    const actual = await readPackageJson(
-      `${dir}${SEPARATOR}npm${SEPARATOR}package_yarn.json`,
-    );
-
-    const actualPackageManager = actual.packageJson.packageManager;
-    assertEquals(actualPackageManager, "yarn@3.0.0");
-
-    const actualNpmScripts = actual.scripts;
-    assertEquals(actualNpmScripts.getScripts().length, 3);
-    assertEquals(actualNpmScripts.getScripts()[0].stage, "test");
-    assertEquals(actualNpmScripts.getScripts()[0].command, "mocha");
-    assertEquals(actualNpmScripts.getScripts()[1].stage, "lint");
-    assertEquals(
-      actualNpmScripts.getScripts()[1].command,
-      "eslint --ext .js,.jsx,.ts,.tsx  ./src",
-    );
-    assertEquals(actualNpmScripts.getScripts()[2].stage, "build");
-    assertEquals(actualNpmScripts.getScripts()[2].command, "tsc");
-  });
-
-  await t.step("fail", async () => {
-    await assertRejects(
-      () => readPackageJson("not_exist.json"),
-      Error,
-      "failed to read 'not_exist.json'",
-    );
-  });
-
-  await t.step(
-    "preserves devEngines for package manager resolution",
-    async () => {
-      const dir = dirname(fromFileUrl(import.meta.url));
-      const { packageJson, scripts } = await readPackageJson(
-        `${dir}${SEPARATOR}dev_engines${SEPARATOR}package.json`,
-      );
-      assertEquals(await resolvePackageManager(packageJson, dir), "pnpm");
-      assertEquals(scripts.getScripts()[0].stage, "test");
-    },
+Deno.test("resolvePackageManager: npm", async () => {
+  const dir = dirname(fromFileUrl(import.meta.url));
+  const actual = await resolvePackageManager(
+    {},
+    `${dir}${SEPARATOR}npm${SEPARATOR}`,
   );
+  assertEquals(actual, "npm");
 });
 
-Deno.test("resolvePackageManager", async (t) => {
+Deno.test("resolvePackageManager: yarn", async () => {
   const dir = dirname(fromFileUrl(import.meta.url));
-
-  await t.step("npm", async () => {
-    const actual = await resolvePackageManager(
-      {},
-      `${dir}${SEPARATOR}npm${SEPARATOR}`,
-    );
-    assertEquals(actual, "npm");
-  });
-
-  await t.step("yarn", async () => {
-    const actual = await resolvePackageManager(
-      {},
-      `${dir}${SEPARATOR}yarn${SEPARATOR}`,
-    );
-    assertEquals(actual, "yarn");
-  });
-
-  await t.step("pnpm", async () => {
-    const actual = await resolvePackageManager(
-      {},
-      `${dir}${SEPARATOR}pnpm${SEPARATOR}`,
-    );
-    assertEquals(actual, "pnpm");
-  });
-
-  await t.step("bun", async () => {
-    const actual = await resolvePackageManager(
-      {},
-      `${dir}${SEPARATOR}bun${SEPARATOR}`,
-    );
-    assertEquals(actual, "bun");
-  });
-
-  await t.step("bun lockb", async () => {
-    const actual = await resolvePackageManager(
-      {},
-      `${dir}${SEPARATOR}bun_lockb${SEPARATOR}`,
-    );
-    assertEquals(actual, "bun");
-  });
-
-  await t.step(
-    "bun takes precedence when multiple lockfiles exist",
-    async () => {
-      const actual = await resolvePackageManager(
-        {},
-        `${dir}${SEPARATOR}multiple_lockfiles`,
-      );
-      assertEquals(actual, "bun");
-    },
+  const actual = await resolvePackageManager(
+    {},
+    `${dir}${SEPARATOR}yarn${SEPARATOR}`,
   );
+  assertEquals(actual, "yarn");
+});
 
-  await t.step("fail", async () => {
-    await assertRejects(
-      () => resolvePackageManager({}, dir),
-      Error,
-      "'bun.lock', 'bun.lockb', 'package-lock.json', 'yarn.lock', or 'pnpm-lock.yaml' not found",
-    );
-  });
+Deno.test("resolvePackageManager: pnpm", async () => {
+  const dir = dirname(fromFileUrl(import.meta.url));
+  const actual = await resolvePackageManager(
+    {},
+    `${dir}${SEPARATOR}pnpm${SEPARATOR}`,
+  );
+  assertEquals(actual, "pnpm");
+});
+
+Deno.test("resolvePackageManager: bun", async () => {
+  const dir = dirname(fromFileUrl(import.meta.url));
+  const actual = await resolvePackageManager(
+    {},
+    `${dir}${SEPARATOR}bun${SEPARATOR}`,
+  );
+  assertEquals(actual, "bun");
+});
+
+Deno.test("resolvePackageManager: bun lockb", async () => {
+  const dir = dirname(fromFileUrl(import.meta.url));
+  const actual = await resolvePackageManager(
+    {},
+    `${dir}${SEPARATOR}bun_lockb${SEPARATOR}`,
+  );
+  assertEquals(actual, "bun");
+});
+
+Deno.test("resolvePackageManager: bun takes precedence when multiple lockfiles exist", async () => {
+  const dir = dirname(fromFileUrl(import.meta.url));
+  const actual = await resolvePackageManager(
+    {},
+    `${dir}${SEPARATOR}multiple_lockfiles`,
+  );
+  assertEquals(actual, "bun");
+});
+
+Deno.test("resolvePackageManager: fail", async () => {
+  const dir = dirname(fromFileUrl(import.meta.url));
+  await assertRejects(
+    () => resolvePackageManager({}, dir),
+    Error,
+    "'bun.lock', 'bun.lockb', 'package-lock.json', 'yarn.lock', or 'pnpm-lock.yaml' not found",
+  );
 });
 
 Deno.test("resolvePackageManager: devEngines takes precedence over packageManager and lockfiles", async () => {
@@ -450,104 +375,4 @@ Deno.test("resolvePackageManager: packageManager accepts a Corepack hash suffix"
     `${dir}${SEPARATOR}npm`,
   );
   assertEquals(actual, "pnpm");
-});
-
-Deno.test("filter scripts (without argument)", () => {
-  const scripts = new NpmScripts([
-    new Script("foo", "echo foo"),
-    new Script("bar", "echo bar"),
-    new Script("baz", "echo baz"),
-  ]);
-  const actual = scripts.filterItems();
-  assertEquals(actual.getScripts().length, 3);
-});
-
-Deno.test("filter scripts (with argument)", () => {
-  const scripts = new NpmScripts([
-    new Script("foo", "echo foo"),
-    new Script("bar", "echo bar"),
-    new Script("baz", "echo baz"),
-  ]);
-
-  const actual = scripts.filterItems("ba");
-  assertEquals(actual.getScripts().length, 2);
-  assertEquals(actual.getScripts()[0].stage, "bar");
-  assertEquals(actual.getScripts()[1].stage, "baz");
-});
-
-class MockedSelectPrompt implements SelectPrompt {
-  called = 0;
-  calledWith: NpmScripts | undefined;
-
-  select = (scripts: NpmScripts): Promise<Script> => {
-    this.called++;
-    this.calledWith = scripts;
-    return Promise.resolve(scripts.getScripts()[0]);
-  };
-}
-
-Deno.test("select a script (not invoke prompt)", async () => {
-  // Given
-  const foo = new Script("foo", "echo foo");
-  const scripts = new NpmScripts([foo]);
-  const promptMock = new MockedSelectPrompt();
-
-  // When
-  const actual = await selectScript(scripts, promptMock);
-
-  // Then
-  assertEquals(actual, foo);
-  assertEquals(promptMock.called, 0);
-});
-
-Deno.test("select a script (invoke prompt)", async () => {
-  // Given
-  const foo = new Script("foo", "echo foo");
-  const bar = new Script("bar", "echo bar");
-  const scripts = new NpmScripts([foo, bar]);
-  const promptMock = new MockedSelectPrompt();
-
-  // When
-  await selectScript(scripts, promptMock);
-
-  // Then
-  assertEquals(promptMock.called, 1);
-  assertEquals(promptMock.calledWith, scripts);
-});
-
-class MockedCommandRunner implements CommandRunner {
-  calledWith: string[] = [];
-  run = async (cmd: string[]) => {
-    await Promise.resolve(this.calledWith = cmd);
-  };
-}
-
-Deno.test("run script without arguments", () => {
-  const packageManager = "npm";
-  const stage = new Script("build", "build");
-  const args: string[] = [];
-  const commandRunner = new MockedCommandRunner();
-
-  runScript(packageManager, stage, args, commandRunner);
-  assertEquals(commandRunner.calledWith, ["npm", "run", "build"]);
-});
-
-Deno.test("run script with arguments", () => {
-  const packageManager = "yarn";
-  const stage = new Script("test", "test");
-  const args: string[] = ["test.ts"];
-  const commandRunner = new MockedCommandRunner();
-
-  runScript(packageManager, stage, args, commandRunner);
-  assertEquals(commandRunner.calledWith, ["yarn", "run", "test", "test.ts"]);
-});
-
-Deno.test("run script with bun", () => {
-  const packageManager = "bun";
-  const stage = new Script("test", "test");
-  const args: string[] = ["test.ts"];
-  const commandRunner = new MockedCommandRunner();
-
-  runScript(packageManager, stage, args, commandRunner);
-  assertEquals(commandRunner.calledWith, ["bun", "run", "test", "test.ts"]);
 });

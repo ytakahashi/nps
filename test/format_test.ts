@@ -1,5 +1,5 @@
 import { assertEquals } from "./deps.ts";
-import { NpmScripts, Script } from "../src/core.ts";
+import { NpmScripts, Script } from "../src/npm_scripts.ts";
 import { formatScriptsAsTsv } from "../src/format.ts";
 
 Deno.test("format scripts as TSV", () => {
