@@ -12,17 +12,16 @@ jobs:
 
     strategy:
       matrix:
-        deno: ["v1.x", "v2.x"]
         os: [macOS-latest, windows-latest, ubuntu-latest]
 
     steps:
       - name: Setup repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7.0.1
 
       - name: Setup Deno
-        uses: denoland/setup-deno@main
+        uses: denoland/setup-deno@v2.0.5
         with:
-          deno-version: ${{ matrix.deno }} # tests across multiple Deno versions
+          deno-version: "v2.x"
 
       - name: Lint
         run: deno lint
