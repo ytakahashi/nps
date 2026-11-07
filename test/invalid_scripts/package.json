@@ -1,0 +1,1 @@
+{ "scripts": { "valid": "echo valid", "test": 42 } }

@@ -1,10 +1,6 @@
-import {
-  Arguments,
-  readPackageJson,
-  resolvePackageManager,
-  runScript,
-  selectScript,
-} from "./core.ts";
+import { NpmScripts, runScript, selectScript } from "./npm_scripts.ts";
+import { readPackageJson } from "./package_json.ts";
+import { resolvePackageManager } from "./package_manager.ts";
 import { zshCompletionScript } from "./completion.ts";
 import { formatScriptsAsTsv } from "./format.ts";
 import {
@@ -12,6 +8,20 @@ import {
   CliffySelectPrompt,
   DaxCommandRunner,
 } from "./impl.ts";
+
+export type Arguments = {
+  npsArgument?: string;
+  commandArguments: string[];
+  hasHelpOption: boolean;
+  hasVersionOption: boolean;
+  hasListScriptsOption: boolean;
+  hasInitCompletionOption: boolean;
+  initCompletionShell?: string;
+};
+
+export interface ArgParser {
+  parse(args: string[]): Arguments;
+}
 
 function exit(message: string): never {
   console.log(`nps: ${message}`);
@@ -30,9 +40,8 @@ export class Command {
   }
 
   main = async (): Promise<void> => {
-    const { packageJson, scripts } = await readPackageJson().catch((e) =>
-      exit(e.message)
-    );
+    const packageJson = await readPackageJson().catch((e) => exit(e.message));
+    const scripts = NpmScripts.fromPackageJson(packageJson);
     if (!scripts.hasItems()) {
       exit("scripts not defined");
     }
@@ -56,12 +65,15 @@ export class Command {
   };
 
   listScripts = async (): Promise<void> => {
-    const result = await readPackageJson().catch(() => undefined);
-    if (result === undefined || !result.scripts.hasItems()) {
+    // Completion must stay silent on both read and script validation errors.
+    const scripts = await readPackageJson()
+      .then((packageJson) => NpmScripts.fromPackageJson(packageJson))
+      .catch(() => undefined);
+    if (scripts === undefined || !scripts.hasItems()) {
       return;
     }
 
-    console.log(formatScriptsAsTsv(result.scripts));
+    console.log(formatScriptsAsTsv(scripts));
   };
 
   initCompletion = (): void => {

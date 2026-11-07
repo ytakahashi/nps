@@ -1,101 +1,9 @@
-export type Arguments = {
-  npsArgument?: string;
-  commandArguments: string[];
-  hasHelpOption: boolean;
-  hasVersionOption: boolean;
-  hasListScriptsOption: boolean;
-  hasInitCompletionOption: boolean;
-  initCompletionShell?: string;
-};
-
-type Scripts = {
-  [key: string]: string;
-};
+import type { PackageJson } from "./package_json.ts";
+import { isObject } from "./validation.ts";
 
 const supportedPackageManagers = ["bun", "npm", "yarn", "pnpm"] as const;
 
 export type PackageManager = typeof supportedPackageManagers[number];
-
-export type PackageJson = {
-  scripts?: unknown;
-  devEngines?: unknown;
-  packageManager?: unknown;
-};
-
-export interface SelectPrompt {
-  select(scripts: NpmScripts): Promise<Script>;
-}
-
-export interface CommandRunner {
-  run(cmd: string[]): Promise<void>;
-}
-
-export interface ArgParser {
-  parse(args: string[]): Arguments;
-}
-
-export class Script {
-  stage: string;
-  command: string;
-  constructor(stage: string, command: string) {
-    this.stage = stage;
-    this.command = command;
-  }
-  optionMessage = (): string => `${this.stage} (${this.command})`;
-}
-
-export class NpmScripts {
-  #scripts: Script[];
-
-  constructor(scripts: Script[]) {
-    this.#scripts = scripts;
-  }
-
-  getScripts = (): Script[] => this.#scripts;
-
-  hasItems = (): boolean => this.#scripts.length !== 0;
-
-  filterItems = (value?: string): NpmScripts => {
-    const filtered = value === undefined
-      ? this.#scripts
-      : this.#scripts.filter((s) => s.stage.includes(value));
-    return new NpmScripts(filtered);
-  };
-
-  shouldPrompt = (): boolean => this.#scripts.length === 1;
-
-  getMatchesTo = (optionMessage: string): Script => {
-    const matched = this.#scripts.find(
-      (script) => script.optionMessage() === optionMessage,
-    );
-    if (matched === undefined) {
-      throw new Error(`Unexpected: ${optionMessage}`);
-    }
-    return matched;
-  };
-}
-
-export async function readPackageJson(
-  packageFile = `package.json`,
-): Promise<{ packageJson: PackageJson; scripts: NpmScripts }> {
-  const json: unknown = await Deno.readTextFile(packageFile)
-    .catch((_) => {
-      throw new Error(`failed to read '${packageFile}'`);
-    })
-    .then((data) => JSON.parse(data));
-
-  if (!isObject(json)) {
-    throw new Error(`expected an object in '${packageFile}'`);
-  }
-  const scripts = Object.entries((json.scripts ?? {}) as Scripts).map(
-    (script) => new Script(script[0], script[1]),
-  );
-
-  return {
-    packageJson: json,
-    scripts: new NpmScripts(scripts),
-  };
-}
 
 export async function resolvePackageManager(
   packageJson: PackageJson,
@@ -107,10 +15,6 @@ export async function resolvePackageManager(
   }
 
   return await findPackageManagerByLockfile(dir);
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isSupportedPackageManager(value: string): value is PackageManager {
@@ -242,28 +146,4 @@ async function findPackageManagerByLockfile(
       "'bun.lock', 'bun.lockb', 'package-lock.json', 'yarn.lock', or 'pnpm-lock.yaml' not found",
     );
   }
-}
-
-export async function selectScript(
-  scripts: NpmScripts,
-  prompt: SelectPrompt,
-): Promise<Script> {
-  if (scripts.shouldPrompt()) {
-    return scripts.getScripts()[0];
-  }
-
-  return await prompt.select(scripts);
-}
-
-export async function runScript(
-  packageManager: string,
-  script: Script,
-  args: string[],
-  commandRunner: CommandRunner,
-) {
-  const cmd = [packageManager, "run", script.stage];
-  if (args.length > 0) {
-    cmd.push(...args);
-  }
-  await commandRunner.run(cmd);
 }

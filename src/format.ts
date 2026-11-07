@@ -1,4 +1,4 @@
-import { NpmScripts, Script } from "./core.ts";
+import { NpmScripts, Script } from "./npm_scripts.ts";
 
 function sanitizeTsvField(value: string): string {
   return value.replaceAll("\t", " ").replaceAll("\n", " ");
