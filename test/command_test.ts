@@ -117,3 +117,17 @@ Deno.test("Command#run --list-scripts stays silent when package.json is missing"
 
   assertEquals(logs, []);
 });
+
+Deno.test("Command#run --list-scripts ignores invalid package manager declarations without lockfiles", async () => {
+  let logs: string[] = [];
+  await withCwd(
+    `${fixtureDir}${SEPARATOR}invalid_package_manager`,
+    async () => {
+      logs = await captureLog(() =>
+        new Command(["--list-scripts"], version, helpMessage).run()
+      );
+    },
+  );
+
+  assertEquals(logs, ["test\techo test"]);
+});

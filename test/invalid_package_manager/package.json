@@ -1,0 +1,9 @@
+{
+  "devEngines": {
+    "packageManager": "pnpm"
+  },
+  "packageManager": false,
+  "scripts": {
+    "test": "echo test"
+  }
+}
