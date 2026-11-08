@@ -1,10 +1,9 @@
 import { assertEquals, assertThrows } from "./deps.ts";
+import { MockedCommandRunner, MockedSelectPrompt } from "./test_doubles.ts";
 import {
-  CommandRunner,
   NpmScripts,
   runScript,
   Script,
-  SelectPrompt,
   selectScript,
 } from "../src/npm_scripts.ts";
 
@@ -30,17 +29,6 @@ Deno.test("filter scripts (with argument)", () => {
   assertEquals(actual.getScripts()[0].stage, "bar");
   assertEquals(actual.getScripts()[1].stage, "baz");
 });
-
-class MockedSelectPrompt implements SelectPrompt {
-  called = 0;
-  calledWith: NpmScripts | undefined;
-
-  select = (scripts: NpmScripts): Promise<Script> => {
-    this.called++;
-    this.calledWith = scripts;
-    return Promise.resolve(scripts.getScripts()[0]);
-  };
-}
 
 Deno.test("select a script (not invoke prompt)", async () => {
   // Given
@@ -70,13 +58,6 @@ Deno.test("select a script (invoke prompt)", async () => {
   assertEquals(promptMock.called, 1);
   assertEquals(promptMock.calledWith, scripts);
 });
-
-class MockedCommandRunner implements CommandRunner {
-  calledWith: string[] = [];
-  run = async (cmd: string[]) => {
-    await Promise.resolve(this.calledWith = cmd);
-  };
-}
 
 Deno.test("run script without arguments", async () => {
   const packageManager = "npm";
