@@ -6,6 +6,8 @@ workflows:
     '.github/workflows/deno.yml':
         - 'actions/checkout@v7.0.1'
         - 'denoland/setup-deno@v2.0.5'
+    '.github/workflows/verify-lockfile.yml':
+        - 'actions/checkout@v7.0.1'
 dependencies:
     'actions/checkout@v7.0.1':
         ref: 'v7.0.1'
