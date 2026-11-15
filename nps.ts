@@ -1,9 +1,7 @@
 import { Command } from "./src/command.ts";
-import {
-  CliffyArgParser,
-  CliffySelectPrompt,
-  DaxCommandRunner,
-} from "./src/impl.ts";
+import { parseArguments } from "./src/argument_parser.ts";
+import { CliffySelectPrompt } from "./src/select_prompt.ts";
+import { DaxCommandRunner } from "./src/command_runner.ts";
 
 const version = "1.1.0";
 
@@ -39,7 +37,7 @@ EXAMPLES:
   $ nps test -- -f test/myTest.spec.ts
 `;
 
-const args = new CliffyArgParser().parse(Deno.args);
+const args = parseArguments(Deno.args);
 await new Command(args, version, helpMessage, {
   selectPrompt: new CliffySelectPrompt(),
   commandRunner: new DaxCommandRunner(),
